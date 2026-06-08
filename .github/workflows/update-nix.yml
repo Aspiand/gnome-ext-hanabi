@@ -1,19 +1,13 @@
-name: Update Nix package
+name: Update nixpkgs hash
 
 on:
   schedule:
-    # Weekly Monday 06:00 UTC
+    # Weekly Monday 06:00 UTC — nixpkgs master rolling, hash perlu di-refresh
     - cron: '0 6 * * 1'
   workflow_dispatch:
-    inputs:
-      nixpkgs-ref:
-        description: 'nixpkgs ref to track (default: nixos-unstable)'
-        required: false
-        default: 'nixos-unstable'
-        type: string
 
 jobs:
-  update-lock:
+  update:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,63 +18,16 @@ jobs:
 
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: Update flake.lock (nixpkgs input)
+      - name: Update flake.lock (nixpkgs hash)
         uses: DeterminateSystems/update-flake-lock@main
         with:
           inputs: nixpkgs
-          commit-msg: "chore: update nixpkgs flake lock"
-          pr-title: "chore: update nixpkgs flake lock"
+          commit-msg: "chore: update nixpkgs hash in flake.lock"
+          pr-title: "chore: update nixpkgs hash"
           pr-body: |
-            Automated update of the `nixpkgs` input in `flake.lock`.
+            Auto-update nixpkgs input hash via `nix flake update`.
 
             Triggered by weekly schedule or manual workflow_dispatch.
           pr-labels: |
             automated
             dependencies
-          assignees: ${{ github.repository_owner }}
-
-  check-upstream:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: DeterminateSystems/nix-installer-action@main
-        with:
-          determinate: true
-
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - name: Check upstream for changes
-        id: upstream
-        run: |
-          git remote add upstream https://github.com/jeffshee/gnome-ext-hanabi.git
-          git fetch upstream master --depth=1
-          HEAD_HASH=$(git rev-parse HEAD)
-          UPSTREAM_HASH=$(git rev-parse upstream/master)
-
-          echo "HEAD:       $HEAD_HASH"
-          echo "UPSTREAM:   $UPSTREAM_HASH"
-
-          echo "head=$HEAD_HASH" >> "$GITHUB_OUTPUT"
-          echo "upstream=$UPSTREAM_HASH" >> "$GITHUB_OUTPUT"
-
-      - name: Build package
-        id: build
-        continue-on-error: true
-        run: |
-          nix build .#hanabi --print-build-logs 2>&1 | tee build.log
-          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
-
-      - name: Report build status
-        if: steps.build.outputs.exit_code != '0'
-        run: |
-          echo "## ⚠️ Build failed" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          tail -50 build.log >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-
-      - name: Report build success
-        if: steps.build.outputs.exit_code == '0'
-        run: |
-          echo "## ✅ Build succeeded" >> $GITHUB_STEP_SUMMARY
-          nix derivation show .#hanabi 2>/dev/null | jq -r 'to_entries[] | "\(.key): \(.value.env.pname // "?")-\(.value.env.version // "?")"' >> $GITHUB_STEP_SUMMARY
