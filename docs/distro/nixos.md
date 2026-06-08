@@ -25,14 +25,6 @@ Or as a flake input:
 }
 ```
 
-## Without Flakes
-
-```bash
-nix-build -E 'with import <nixpkgs> {}; callPackage ./. {}'
-```
-
-Or via the repo directory directly (requires `default.nix` — not yet available in this branch).
-
 ## Home Manager
 
 Reference: [aira's home.nix](/host/dotfiles/nixos/hosts/aira/home.nix)
