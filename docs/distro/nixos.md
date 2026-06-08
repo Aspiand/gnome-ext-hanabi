@@ -2,10 +2,6 @@
 
 ## Using Flakes
 
-```bash
-nix build github:Aspiand/gnome-ext-hanabi#hanabi
-```
-
 Or as a flake input:
 
 ```nix
