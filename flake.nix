@@ -11,11 +11,7 @@
 
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
 
-      version =
-        if self ? lastModifiedDate && self ? shortRev then
-          "${builtins.substring 0 8 self.lastModifiedDate}-${self.shortRev}"
-        else
-          "unstable";
+      version = (builtins.fromJSON (builtins.readFile ./package.json)).version;
 
       extensionName = "hanabi";
       extensionUuid = "hanabi-extension@jeffshee.github.io";
