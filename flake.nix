@@ -5,18 +5,22 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
 
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
 
       version = (builtins.fromJSON (builtins.readFile ./package.json)).version;
 
-      extensionName = "hanabi";
       extensionUuid = "hanabi-extension@jeffshee.github.io";
 
-      mkHanabi = pkgs:
+      mkHanabi =
+        pkgs:
         let
           pname = "gnome-ext-hanabi";
         in
@@ -83,11 +87,14 @@
             maintainers = with maintainers; [ ];
           };
         };
-    in {
-      packages = forAllSystems (system:
+    in
+    {
+      packages = forAllSystems (
+        system:
         let
           hanabi = mkHanabi (import nixpkgs { inherit system; });
-        in {
+        in
+        {
           inherit hanabi;
           default = hanabi;
         }
