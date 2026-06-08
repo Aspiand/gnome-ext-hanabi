@@ -3,14 +3,14 @@
 ## Using Flakes
 
 ```bash
-nix build github:Aspiand/gnome-ext-hanabi/draft/nix-packaging#hanabi
+nix build github:Aspiand/gnome-ext-hanabi#hanabi
 ```
 
 Or as a flake input:
 
 ```nix
 {
-  inputs.hanabi.url = "github:Aspiand/gnome-ext-hanabi/draft/nix-packaging";
+  inputs.hanabi.url = "github:Aspiand/gnome-ext-hanabi";
 
   outputs = { self, nixpkgs, hanabi, ... }: {
     nixosConfigurations.my-machine = nixpkgs.lib.nixosSystem {
