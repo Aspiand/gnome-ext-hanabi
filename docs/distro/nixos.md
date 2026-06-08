@@ -27,8 +27,6 @@ Or as a flake input:
 
 ## Home Manager
 
-Reference: [aira's home.nix](/host/dotfiles/nixos/hosts/aira/home.nix)
-
 Add to `home.packages`:
 
 ```nix
