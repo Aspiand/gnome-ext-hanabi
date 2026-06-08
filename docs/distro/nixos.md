@@ -1,93 +1,60 @@
-# Installation Guide for NixOS
+# NixOS Installation Guide
 
-The Hanabi extension is packaged as a Nix flake, using the repository itself as the source.
-
-## Quick Build
+## Using Flakes
 
 ```bash
-# Clone and build
-git clone https://github.com/Aspiand/gnome-ext-hanabi.git
-cd gnome-ext-hanabi
-nix build .#hanabi
-
-# Or directly from GitHub
 nix build github:Aspiand/gnome-ext-hanabi/draft/nix-packaging#hanabi
 ```
 
-The built extension lands in `result/share/gnome-shell/extensions/`.
-
-## Using as a Flake Input
-
-Add to your `flake.nix`:
+Or as a flake input:
 
 ```nix
 {
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.hanabi.url = "github:Aspiand/gnome-ext-hanabi/draft/nix-packaging";
 
-    hanabi.url = "github:Aspiand/gnome-ext-hanabi/draft/nix-packaging";
-    hanabi.inputs.nixpkgs.follows = "nixpkgs";
-  };
-
-  outputs = { self, nixpkgs, hanabi, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [ hanabi.overlays.default ];
-      };
-    in {
-      # Now pkgs.hanabi is available
-      environment.systemPackages = with pkgs; [ hanabi ];
+  outputs = { self, nixpkgs, hanabi, ... }: {
+    nixosConfigurations.my-machine = nixpkgs.lib.nixosSystem {
+      modules = [
+        ({ pkgs, ... }: {
+          nixpkgs.overlays = [ hanabi.overlays.default ];
+          environment.systemPackages = [ pkgs.hanabi ];
+        })
+      ];
     };
+  };
 }
 ```
 
-## Using via Overlay
+## Without Flakes
 
-The flake exposes an overlay:
-
-```nix
-nixpkgs.overlays = [
-  (import ./path/to/hanabi-flake).overlays.default
-];
+```bash
+nix-build -E 'with import <nixpkgs> {}; callPackage ./. {}'
 ```
 
-This adds `pkgs.hanabi` to the package set.
+Or via the repo directory directly (requires `default.nix` — not yet available in this branch).
 
-## GNOME Shell Versions
+## Home Manager
 
-Each GNOME version branch has matching flake support:
+Reference: [aira's home.nix](/host/dotfiles/nixos/hosts/aira/home.nix)
 
-| Branch       | GNOME Versions | How to Build                           |
-|--------------|---------------|----------------------------------------|
-| `master`     | 45–50         | `nix build .#hanabi`                   |
-| `gnome-50`   | 50            | `nix build github:.../gnome-50#hanabi` |
-| `gnome-49`   | 49            | `nix build github:.../gnome-49#hanabi` |
-| `gnome-48`   | 48            | `nix build github:.../gnome-48#hanabi` |
-| `gnome-47`   | 47            | `nix build github:.../gnome-47#hanabi` |
-| `gnome-46`   | 46            | `nix build github:.../gnome-46#hanabi` |
+Add to `home.packages`:
 
-## Dependencies
+```nix
+# system flake overlay provides pkgs.hanabi
+home.packages = with pkgs; [ hanabi ];
+```
 
-All dependencies are handled by Nix automatically:
+Then enable the extension via dconf:
 
-- **GStreamer** suite (base, good, bad, ugly, libav, vaapi)
-- **Clapper** (hardware-accelerated playback)
-- **GJS** (GNOME JavaScript runtime)
-- **GTK4** with GStreamer media backend
-- **Wayland** protocols
-- **Meson** + **Ninja** build system
+```nix
+dconf.settings = {
+  "org/gnome/shell" = {
+    enable-extensions = true;
+    enabled-extensions = [
+      pkgs.hanabi.extensionUuid
+    ];
+  };
+};
+```
 
-## Auto-Updates
-
-A GitHub Action runs weekly to update the `nixpkgs` hash in `flake.lock`.
-It can also be triggered manually via `workflow_dispatch`.
-
-## Troubleshooting
-
-**Black screen after enabling extension:**
-Enable `Force gtk4paintablesink` or `Force GtkMediaFile` in extension settings.
-
-**Blur My Shell conflict:**
-Add `io.github.jeffshee.HanabiRenderer` to Blur My Shell's application blacklist.
+The `extensionUuid` passthru is `hanabi-extension@jeffshee.github.io`.
