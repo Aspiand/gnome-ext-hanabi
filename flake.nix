@@ -48,6 +48,7 @@
               gst_all_1.gst-vaapi
               gtk4
               gjs
+              clapper
             ];
 
             dontUseMesonConfigure = true;

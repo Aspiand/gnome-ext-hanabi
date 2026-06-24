@@ -20,6 +20,11 @@ in {
   dconf.settings."org/gnome/shell".enabled-extensions = [
     hanabi.passthru.extensionUuid
   ];
+
+  # Optional: prefer clappersink over gtk4paintablesink for better perf
+  # dconf.settings."io/github/jeffshee/hanabi-extension" = {
+  #   prefer-clappersink = true;
+  # };
 }
 ```
 
