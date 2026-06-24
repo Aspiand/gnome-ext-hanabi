@@ -11,7 +11,7 @@
 ```nix
 # flake.nix
 hanabi = {
-  url = "github:Aspiand/gnome-ext-hanabi?ref=draft/nix";
+  url = "github:jeffshee/gnome-ext-hanabi";
   inputs.nixpkgs.follows = "nixpkgs";
 };
 ```
