@@ -1,13 +1,5 @@
 # Installation Guide for NixOS
 
-## GNOME Version & Branch
-
-| GNOME | Flake Branch | Upstream |
-|---|---|---|
-| 42–44 | — | `legacy` |
-| 45–50 | `draft/nix` | `javascript` |
-| 50+ | `draft/nix-typescript` | `typescript` |
-
 ```nix
 # flake.nix
 hanabi = {
